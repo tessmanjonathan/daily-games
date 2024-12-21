@@ -1,32 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import Numbers from './Numbers.jsx';
-import Tiles from './Tiles.jsx';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
+import gamesConfig from '../games.json';
 
-// Game configuration object
-const GAMES = {
-  tiles: {
-    id: 'tiles',
-    title: 'Tiles',
-    component: Tiles,
-    description: 'Find the hidden tiles in the grid',
-    enabled: true,
-    },
-  numbers: {
-    id: 'numbers',
-    title: 'Numbers',
-    component: Numbers,
-    description: 'Guess the 6-digit number with proximity hints',
-    enabled: true,
-  },
+// Define game components map for dynamic loading
+const gameComponents = {
+  tiles: lazy(() => import('./games/Tiles.jsx')),
+  numbers: lazy(() => import('./games/Numbers.jsx'))
 };
 
 const GameLauncher = () => {
-  const [currentGame, setCurrentGame] = useState(Object.keys(GAMES).find(id => GAMES[id].enabled));
+  const [currentGame, setCurrentGame] = useState(
+    Object.values(gamesConfig.games).find(game => game.enabled)?.id
+  );
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     const path = window.location.pathname.toLowerCase();
-    const gameId = Object.keys(GAMES).find(id => path.includes(id));
+    const gameId = Object.keys(gamesConfig.games).find(id => path.includes(id));
     if (gameId) {
       setCurrentGame(gameId);
     }
@@ -37,7 +26,7 @@ const GameLauncher = () => {
 
   const handlePopState = () => {
     const path = window.location.pathname.toLowerCase();
-    const gameId = Object.keys(GAMES).find(id => path.includes(id));
+    const gameId = Object.keys(gamesConfig.games).find(id => path.includes(id));
     if (gameId) {
       setCurrentGame(gameId);
     }
@@ -49,7 +38,8 @@ const GameLauncher = () => {
     window.history.pushState({}, '', `/${gameId}`);
   };
 
-  const CurrentGameComponent = GAMES[currentGame].component;
+  // Get the current game component
+  const CurrentGameComponent = gameComponents[currentGame];
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -75,7 +65,7 @@ const GameLauncher = () => {
             {/* Current Game Title */}
             <div className="flex items-center">
               <span className="text-lg font-medium text-gray-700">
-                {GAMES[currentGame].title}
+                {gamesConfig.games[currentGame].title}
               </span>
             </div>
           </div>
@@ -113,7 +103,9 @@ const GameLauncher = () => {
             </div>
             
             <div className="space-y-1">
-              {Object.values(GAMES).filter(game => game.enabled).map((game) => (
+              {Object.values(gamesConfig.games)
+                .filter(game => game.enabled)
+                .map((game) => (
                 <button
                   key={game.id}
                   onClick={() => switchGame(game.id)}
@@ -140,7 +132,9 @@ const GameLauncher = () => {
       <main className="py-8 px-4">
         <div className="max-w-2xl mx-auto">
           <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-            <CurrentGameComponent />
+            <Suspense fallback={<div className="p-8 text-center">Loading game...</div>}>
+              {CurrentGameComponent && <CurrentGameComponent />}
+            </Suspense>
           </div>
         </div>
       </main>

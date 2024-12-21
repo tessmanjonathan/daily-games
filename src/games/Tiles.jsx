@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Calendar, Info } from 'lucide-react';
-import Instructions from './components/Instructions';
-import Version from './components/Version';
+import Instructions from '../components/Instructions';
+import Version from '../components/Version';
 
 
 const Tiles = () => {

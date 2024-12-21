@@ -6,8 +6,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const GAMES_DIR = 'src/components';
-const VERSION_FILE = '.version-info.json';
+const GAMES_CONFIG = 'games.json';
 
 function getLastCommitHash(filePath) {
   try {
@@ -18,40 +17,49 @@ function getLastCommitHash(filePath) {
 }
 
 function updateVersionInfo() {
-  // Read existing version info or create new
-  let versionInfo = {};
+  console.log('Starting version info update...');
+  
+  // Read games configuration
+  let gamesConfig = {};
   try {
-    versionInfo = JSON.parse(fs.readFileSync(VERSION_FILE));
-  } catch (e) {}
+    gamesConfig = JSON.parse(fs.readFileSync(GAMES_CONFIG));
+    console.log('Current games config loaded');
+  } catch (e) {
+    console.error('Error reading games config:', e);
+    process.exit(1);
+  }
 
   // Get staged files
   const stagedFiles = execSync('git diff --cached --name-only').toString().split('\n');
+  console.log('Staged files:', stagedFiles);
   
-  // Check for game component changes
-  const gameFiles = stagedFiles.filter(file => 
-    file.startsWith('src/components/') && 
-    (file.endsWith('Tiles.jsx') || file.endsWith('Numbers.jsx'))
-  );
+  // Check for game component changes using paths from config
+  const gameUpdates = Object.entries(gamesConfig.games)
+    .filter(([_, game]) => stagedFiles.includes(game.path));
+  
+  console.log('Games to update:', gameUpdates.map(([id]) => id));
 
-  gameFiles.forEach(file => {
-    const gameName = path.basename(file, '.jsx').toLowerCase();
-    const currentInfo = versionInfo[gameName] || { version: '1.0.0' };
+  let hasUpdates = false;
+  
+  gameUpdates.forEach(([gameId, game]) => {
+    console.log(`Processing game: ${game.title}`);
     
     // Increment patch version
-    const [major, minor, patch] = currentInfo.version.split('.');
-    currentInfo.version = `${major}.${minor}.${parseInt(patch) + 1}`;
-    currentInfo.lastUpdated = new Date().toISOString();
-    currentInfo.commitHash = getLastCommitHash(file);
+    const [major, minor, patch] = game.version.split('.');
+    game.version = `${major}.${minor}.${parseInt(patch) + 1}`;
+    game.lastUpdated = new Date().toISOString();
+    game.commitHash = getLastCommitHash(game.path);
 
-    versionInfo[gameName] = currentInfo;
+    console.log(`New version for ${game.title}: ${game.version}`);
+    hasUpdates = true;
   });
 
-  // Save updated version info
-  fs.writeFileSync(VERSION_FILE, JSON.stringify(versionInfo, null, 2));
-  
-  // Stage the version file if it was modified
-  if (gameFiles.length > 0) {
-    execSync(`git add ${VERSION_FILE}`);
+  if (hasUpdates) {
+    console.log('Saving updated games config');
+    fs.writeFileSync(GAMES_CONFIG, JSON.stringify(gamesConfig, null, 2));
+    execSync(`git add ${GAMES_CONFIG}`);
+  } else {
+    console.log('No updates needed to games config');
   }
 }
 

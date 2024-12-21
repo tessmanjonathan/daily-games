@@ -1,0 +1,24 @@
+{
+    "games": {
+      "tiles": {
+        "id": "tiles",
+        "title": "Tiles",
+        "description": "Find the hidden tiles in the grid",
+        "path": "src/games/Tiles.jsx",
+        "version": "1.0.0",
+        "lastUpdated": null,
+        "commitHash": null,
+        "enabled": true
+      },
+      "numbers": {
+        "id": "numbers",
+        "title": "Numbers",
+        "description": "Guess the 6-digit number with proximity hints",
+        "path": "src/games/Numbers.jsx",
+        "version": "1.0.0",
+        "lastUpdated": null,
+        "commitHash": null,
+        "enabled": true
+      }
+    }
+  }

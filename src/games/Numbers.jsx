@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Info, Delete, CornerDownLeft, Calendar } from 'lucide-react';
-import Instructions from './components/Instructions';
-import Version from './components/Version';
+import Instructions from '../components/Instructions';
+import Version from '../components/Version';
 
 
 const Numbers = () => {
