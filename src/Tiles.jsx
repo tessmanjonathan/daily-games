@@ -131,6 +131,15 @@ const Tiles = () => {
     startNewGame();
   };
 
+  const handleCloseInstructions = (dontShowAgain) => {
+    setShowInstructions(false);
+    if (dontShowAgain) {
+      setAlwaysShowInstructions(false);
+      localStorage.setItem('numbersAlwaysShowInstructions', 'false');
+    }
+    localStorage.setItem('numbersShowInstructions', 'false');
+  };
+
   const getColorClass = (state) => {
     switch (state) {
       case 1: return 'bg-gray-300';
@@ -241,12 +250,24 @@ const Tiles = () => {
               <ul className="list-disc pl-6 space-y-2">
                 <li>There are 3 hidden tiles in the 4x4 grid</li>
                 <li>Select 3 tiles and click "Flip Tiles" to make a guess</li>
-                <li>Yellow tiles mean you found a correct position</li>
-                <li>Gray tiles mean the position was incorrect</li>
+                <li><span className="text-yellow-500 font-bold">Yellow</span> tiles means that at least one of the 3 tiles is correct</li>
+                <li><span className="text-gray-500 font-bold">Gray</span> tiles mean none of the 3 tiles were incorrect</li>
                 <li>Keep guessing until you find all 3 tiles</li>
                 <li>You can play previous days' puzzles using the date selector</li>
               </ul>
               <p>Good luck!</p>
+
+              <div className="mt-6 flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="dontShowAgain"
+                  className="rounded"
+                  onChange={(e) => handleCloseInstructions(e.target.checked)}
+                />
+                <label htmlFor="dontShowAgain" className="text-sm text-gray-600">
+                  Don't show instructions by default
+                </label>
+              </div>
             </div>
           </div>
         </div>
