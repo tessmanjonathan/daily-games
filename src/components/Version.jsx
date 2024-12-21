@@ -13,7 +13,7 @@ const Version = ({ gameName }) => {
   
   return (
     <div className="text-center mt-8 text-gray-400 text-sm space-y-1">
-      <p>Version {gameInfo.version} ({formattedDate})</p>
+      <p>{gameInfo.title} -  Version {gameInfo.version} ({formattedDate})</p>
       <p>© {currentYear}</p>
       {process.env.NODE_ENV === 'development' && gameInfo.commitHash && (
         <p className="text-xs">Commit: {gameInfo.commitHash.slice(0, 7)}</p>

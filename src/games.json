@@ -5,9 +5,9 @@
       "title": "Tiles",
       "description": "Find the hidden tiles in the grid",
       "path": "src/games/Tiles.jsx",
-      "version": "1.0.1",
-      "lastUpdated": "2024-12-21T20:58:57.593Z",
-      "commitHash": "",
+      "version": "1.0.2",
+      "lastUpdated": "2024-12-21T21:20:49.590Z",
+      "commitHash": "7215b6b0d92e086ad7f7ce1baa63ca4bd400ab9b",
       "enabled": true
     },
     "numbers": {
@@ -15,9 +15,9 @@
       "title": "Numbers",
       "description": "Guess the 6-digit number with proximity hints",
       "path": "src/games/Numbers.jsx",
-      "version": "1.0.1",
-      "lastUpdated": "2024-12-21T20:58:57.601Z",
-      "commitHash": "",
+      "version": "1.0.2",
+      "lastUpdated": "2024-12-21T21:20:49.598Z",
+      "commitHash": "7215b6b0d92e086ad7f7ce1baa63ca4bd400ab9b",
       "enabled": true
     }
   }

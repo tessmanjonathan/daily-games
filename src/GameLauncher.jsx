@@ -1,5 +1,5 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
-import gamesConfig from '../games.json';
+import gamesConfig from './games.json';
 
 // Define game components map for dynamic loading
 const gameComponents = {
@@ -61,13 +61,6 @@ const GameLauncher = () => {
               </button>
               <h1 className="ml-4 text-xl font-bold">Daily Games</h1>
             </div>
-            
-            {/* Current Game Title */}
-            <div className="flex items-center">
-              <span className="text-lg font-medium text-gray-700">
-                {gamesConfig.games[currentGame].title}
-              </span>
-            </div>
           </div>
         </div>
       </nav>
@@ -123,6 +116,10 @@ const GameLauncher = () => {
                   </div>
                 </button>
               ))}
+            </div>
+            <div className="absolute bottom-0 left-0 right-0 p-4">
+              Version 1.0.0
+              <p className="text-xs text-gray-500">© {new Date().getFullYear()}</p>
             </div>
           </div>
         </div>
