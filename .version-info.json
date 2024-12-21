@@ -1,12 +1,12 @@
 {
-    "tiles": {
-        "version": "1.0.0",
-        "lastUpdated": null,
-        "commitHash": null
-    },
-    "numbers": {
-        "version": "1.0.0",
-        "lastUpdated": null,
-        "commitHash": null
-    }
+  "tiles": {
+    "version": "1.0.0",
+    "lastUpdated": null,
+    "commitHash": null
+  },
+  "numbers": {
+    "version": "1.0.0",
+    "lastUpdated": null,
+    "commitHash": null
+  }
 }
