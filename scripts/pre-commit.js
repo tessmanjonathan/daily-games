@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const GAMES_CONFIG = 'games.json';
+const GAMES_CONFIG = 'src/games.json';
 
 function getLastCommitHash(filePath) {
   try {
