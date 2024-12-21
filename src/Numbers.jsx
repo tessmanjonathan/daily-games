@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Info, X, Delete, CornerDownLeft, Calendar } from 'lucide-react';
+import { Info, Delete, CornerDownLeft, Calendar } from 'lucide-react';
+import Instructions from './components/Instructions';
+import Version from './components/Version';
+
 
 const Numbers = () => {
   const MAX_GUESSES = 5;
@@ -14,14 +17,9 @@ const Numbers = () => {
   const [alertMessage, setAlertMessage] = useState('');
   const [focusedIndex, setFocusedIndex] = useState(0);
   const [showInstructions, setShowInstructions] = useState(() => {
-    const savedPreference = localStorage.getItem('numbersShowInstructions');
+    const savedPreference = localStorage.getItem('gamesShowInstructions');
     return savedPreference === null ? true : JSON.parse(savedPreference);
   });
-  const [alwaysShowInstructions, setAlwaysShowInstructions] = useState(() => {
-    const savedPreference = localStorage.getItem('numbersAlwaysShowInstructions');
-    return savedPreference === null ? true : JSON.parse(savedPreference);
-  });
-  
   const inputRefs = useRef([]);
 
   const generateDailyNumber = (date) => {
@@ -144,15 +142,6 @@ const Numbers = () => {
     setSelectedDate(previousDate);
     setTargetNumber(generateDailyNumber(previousDate));
     startNewGame();
-  };
-
-  const handleCloseInstructions = (dontShowAgain) => {
-    setShowInstructions(false);
-    if (dontShowAgain) {
-      setAlwaysShowInstructions(false);
-      localStorage.setItem('numbersAlwaysShowInstructions', 'false');
-    }
-    localStorage.setItem('numbersShowInstructions', 'false');
   };
 
   useEffect(() => {
@@ -310,49 +299,28 @@ const Numbers = () => {
           </div>
         </div>
       )}
+      
+      <Instructions
+        isOpen={showInstructions}
+        onClose={() => setShowInstructions(false)}
+        title="How to Play"
+      >
+        <p>Welcome to Daily Numbers! Here's how to play:</p>
+        <ul className="list-disc pl-6 space-y-2">
+          <li>Try to guess today's 6-digit number within 5 attempts</li>
+          <li>After each guess, you'll get feedback:</li>
+          <ul className="list-disc pl-6 space-y-1">
+            <li><span className="text-green-500 font-bold">Green</span> means the digit is correct</li>
+            <li><span className="text-yellow-500 font-bold">Yellow</span> means the digit is within 2 numbers of the correct digit (including wraparound: 9↔0)</li>
+            <li><span className="text-gray-500 font-bold">Gray</span> means the digit is not close</li>
+          </ul>
+          <li><span className="font-bold">Remember!</span> Numbers wrap around: for example, 9 is within 2 of 0 and 1, and 0 is within 2 of 8 and 9</li>
+          <li>You can play previous days' puzzles using the date selector</li>
+        </ul>
+        <p>Good luck!</p>
+      </Instructions>
 
-      {showInstructions && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full relative">
-            <button 
-              onClick={() => handleCloseInstructions(false)}
-              className="absolute right-4 top-4 text-gray-500 hover:text-gray-700"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            
-            <h2 className="text-xl font-bold mb-4">How to Play</h2>
-            
-            <div className="space-y-4">
-              <p>Welcome to Daily Numbers! Here's how to play:</p>
-              <ul className="list-disc pl-6 space-y-2">
-                <li>Try to guess today's 6-digit number within 5 attempts</li>
-                <li>After each guess, you'll get feedback:</li>
-                <ul className="list-disc pl-6 space-y-1">
-                  <li><span className="text-green-500 font-bold">Green</span> means the digit is correct</li>
-                  <li><span className="text-yellow-500 font-bold">Yellow</span> means the digit is within 2 numbers of the correct digit (including wraparound: 9↔0)</li>
-                  <li><span className="text-gray-500 font-bold">Gray</span> means the digit is not close</li>
-                </ul>
-                <li><span className="font-bold">Remember!</span> Numbers wrap around: for example, 9 is within 2 of 0 and 1, and 0 is within 2 of 8 and 9</li>
-                <li>You can play previous days' puzzles using the date selector</li>
-              </ul>
-              <p>Good luck!</p>
-              
-              <div className="mt-6 flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="dontShowAgain"
-                  className="rounded"
-                  onChange={(e) => handleCloseInstructions(e.target.checked)}
-                />
-                <label htmlFor="dontShowAgain" className="text-sm text-gray-600">
-                  Don't show instructions by default
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <Version gameName="Numbers" />
     </div>
   );
 };

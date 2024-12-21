@@ -1,15 +1,20 @@
-import React, { useState } from 'react';
-import { RefreshCw, Calendar, Info, X } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Calendar, Info } from 'lucide-react';
+import Instructions from './components/Instructions';
+import Version from './components/Version';
+
 
 const Tiles = () => {
   const [gameState, setGameState] = useState('playing');
   const [attempts, setAttempts] = useState(0);
   const [feedback, setFeedback] = useState('');
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [showAnimation, setShowAnimation] = useState(false);
-  const [showInstructions, setShowInstructions] = useState(true);
-  
   const [userPattern, setUserPattern] = useState(Array(4).fill().map(() => Array(4).fill(0)));
+  const [showInstructions, setShowInstructions] = useState(() => {
+    const savedPreference = localStorage.getItem('gamesShowInstructions');
+    return savedPreference === null ? true : JSON.parse(savedPreference);
+  });
+  const [isSpinning, setIsSpinning] = useState(false);
   
   const generateDailyPattern = (date) => {
     let seed = date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate();
@@ -43,37 +48,10 @@ const Tiles = () => {
     startNewGame();
   };
 
-  const handleCellClick = (row, col) => {
-    if (gameState !== 'playing') return;
+  const confirmPattern = useCallback(() => {
+    if (gameState !== 'playing' || isSpinning) return;
     
-    const newUserPattern = [...userPattern];
-    newUserPattern[row] = [...newUserPattern[row]];
-    
-    if (newUserPattern[row][col] === 4) {
-      // Remove selection state but maintain the tile's color
-      newUserPattern[row][col] = userPattern[row][col];
-    } else {
-      const currentSelections = newUserPattern.flat().filter(cell => cell === 4).length;
-      if (currentSelections >= 3) {
-        setFeedback('You can only select 3 squares at a time');
-        return;
-      }
-      newUserPattern[row][col] = 4;
-    }
-    
-    setUserPattern(newUserPattern);
-    setFeedback('');
-  };
-
-  const confirmPattern = () => {
-    const currentSelections = userPattern.flat().filter(cell => cell === 4).length;
-    if (currentSelections !== 3) {
-      setFeedback('You must select exactly 3 squares!');
-      return;
-    }
-
-    setAttempts(prev => prev + 1);
-    setShowAnimation(true);
+    setIsSpinning(true);
     
     let correctCount = 0;
     const selectedPositions = [];
@@ -92,11 +70,12 @@ const Tiles = () => {
     const newUserPattern = [...userPattern].map(row => [...row]);
     
     setTimeout(() => {
+      setIsSpinning(false);
+      setAttempts(prev => prev + 1);
       selectedPositions.forEach(([i, j]) => {
         if (correctCount === 3) {
           setGameState('complete');
           setFeedback(`Congratulations, you solved TILES for ${selectedDate.toISOString().split('T')[0]} in ${attempts + 1} ${attempts === 0 ? 'attempt' : 'attempts'}!`);
-          // On win, all correct tiles turn green (handled by renderCell)
         } else if (correctCount === 0) {
           newUserPattern[i][j] = 1; // gray
         } else {
@@ -105,14 +84,47 @@ const Tiles = () => {
       });
       
       setUserPattern(newUserPattern);
-      setShowAnimation(false);
       
       if (correctCount > 0 && correctCount < 3) {
         setFeedback(`${correctCount} out of 3 squares are correct!`);
       } else if (correctCount === 0) {
         setFeedback('None of these squares are correct.');
       }
-    }, 500);
+    }, 650); // Slightly longer than the animation duration
+  }, [gameState, userPattern, dailyPattern, attempts, selectedDate, isSpinning]);
+
+  useEffect(() => {
+    const checkCurrentSelections = () => {
+      const currentSelections = userPattern.flat().filter(cell => cell === 4).length;
+      if (currentSelections === 3 && gameState === 'playing') {
+        confirmPattern();
+      }
+    };
+    checkCurrentSelections();
+  }, [userPattern, gameState, confirmPattern]);
+
+  const handleCellClick = (row, col) => {
+    if (gameState !== 'playing') return;
+    
+    // Skip if the cell is already marked as incorrect (gray)
+    if (userPattern[row][col] === 1) return;
+    
+    const newUserPattern = [...userPattern];
+    newUserPattern[row] = [...newUserPattern[row]];
+    
+    if (newUserPattern[row][col] === 4) {
+      newUserPattern[row][col] = 0;
+    } else {
+      const currentSelections = newUserPattern.flat().filter(cell => cell === 4).length;
+      if (currentSelections >= 3) {
+        setFeedback('You can only select 3 squares at a time');
+        return;
+      }
+      newUserPattern[row][col] = 4;
+    }
+    
+    setUserPattern(newUserPattern);
+    setFeedback('');
   };
 
   const startNewGame = () => {
@@ -120,7 +132,7 @@ const Tiles = () => {
     setUserPattern(Array(4).fill().map(() => Array(4).fill(0)));
     setFeedback('');
     setAttempts(0);
-    setShowAnimation(false);
+    setIsSpinning(false);
   };
 
   const playPreviousDay = () => {
@@ -129,15 +141,6 @@ const Tiles = () => {
     setSelectedDate(previousDate);
     setDailyPattern(generateDailyPattern(previousDate));
     startNewGame();
-  };
-
-  const handleCloseInstructions = (dontShowAgain) => {
-    setShowInstructions(false);
-    if (dontShowAgain) {
-      setAlwaysShowInstructions(false);
-      localStorage.setItem('numbersAlwaysShowInstructions', 'false');
-    }
-    localStorage.setItem('numbersShowInstructions', 'false');
   };
 
   const getColorClass = (state) => {
@@ -152,17 +155,19 @@ const Tiles = () => {
   const renderCell = (row, col) => {
     const cellState = userPattern[row][col];
     const isComplete = gameState === 'complete';
+    const isSelected = cellState === 4;
+    const isDisabled = cellState === 1;
     
     return (
       <div
         data-row={row}
         data-col={col}
-        onClick={() => handleCellClick(row, col)}
-        className={`w-14 h-14 cursor-pointer transition-all duration-200
-          ${showAnimation ? 'animate-spin' : ''}
+        onClick={() => !isDisabled && handleCellClick(row, col)}
+        className={`w-14 h-14 transition-all duration-200
+          ${isSelected && isSpinning ? 'animate-[spin_0.6s_ease-in-out_1]' : ''}
           ${getColorClass(cellState)}
           ${cellState === 4 ? 'border-4 border-blue-500' : 'border-2 border-gray-300'}
-          ${gameState === 'playing' ? 'hover:border-blue-300' : ''}
+          ${!isDisabled && gameState === 'playing' ? 'hover:border-blue-300 cursor-pointer' : 'cursor-not-allowed'}
           ${isComplete && dailyPattern[row][col] === 1 ? 'bg-green-500 border-2 border-green-600' : ''}`}
       />
     );
@@ -174,7 +179,7 @@ const Tiles = () => {
     <div className="p-6 max-w-md mx-auto bg-white rounded-xl shadow-md">
       <div className="text-center mb-6">
         <div className="flex justify-between items-center mb-2">
-          <h1 className="text-2xl font-bold ml-8">TILES</h1>
+          <h1 className="text-2xl font-bold ml-8">Tiles</h1>
           <button 
             onClick={() => setShowInstructions(true)}
             className="p-2 text-gray-500 hover:text-gray-700"
@@ -213,15 +218,6 @@ const Tiles = () => {
             {feedback}
           </p>
         )}
-        
-        {gameState === 'playing' && (
-          <button
-            onClick={confirmPattern}
-            className="w-full p-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
-          >
-            Flip Tiles
-          </button>
-        )}
 
         {gameState === 'complete' && (
           <button
@@ -233,45 +229,24 @@ const Tiles = () => {
         )}
       </div>
 
-      {showInstructions && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full relative">
-            <button 
-              onClick={() => setShowInstructions(false)}
-              className="absolute right-4 top-4 text-gray-500 hover:text-gray-700"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            
-            <h2 className="text-xl font-bold mb-4">How to Play</h2>
-            
-            <div className="space-y-4">
-              <p>Welcome to Daily Tiles! Here's how to play:</p>
-              <ul className="list-disc pl-6 space-y-2">
-                <li>There are 3 hidden tiles in the 4x4 grid</li>
-                <li>Select 3 tiles and click "Flip Tiles" to make a guess</li>
-                <li><span className="text-yellow-500 font-bold">Yellow</span> tiles means that at least one of the 3 tiles is correct</li>
-                <li><span className="text-gray-500 font-bold">Gray</span> tiles mean none of the 3 tiles were incorrect</li>
-                <li>Keep guessing until you find all 3 tiles</li>
-                <li>You can play previous days' puzzles using the date selector</li>
-              </ul>
-              <p>Good luck!</p>
+      <Instructions
+        isOpen={showInstructions}
+        onClose={() => setShowInstructions(false)}
+        title="How to Play"
+      >
+        <p>Welcome to Daily Tiles! Here's how to play:</p>
+        <ul className="list-disc pl-6 space-y-2">
+          <li>There are 3 hidden tiles in the 4x4 grid</li>
+          <li>Select 3 tiles to make a guess</li>
+          <li><span className="text-yellow-500 font-bold">Yellow</span> tiles means that at least one of the 3 tiles is correct</li>
+          <li><span className="text-gray-500 font-bold">Gray</span> tiles mean none of the 3 tiles were correct</li>
+          <li>Keep guessing until you find all 3 tiles</li>
+          <li>You can play previous days' puzzles using the date selector</li>
+        </ul>
+        <p>Good luck!</p>
+      </Instructions>
 
-              <div className="mt-6 flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="dontShowAgain"
-                  className="rounded"
-                  onChange={(e) => handleCloseInstructions(e.target.checked)}
-                />
-                <label htmlFor="dontShowAgain" className="text-sm text-gray-600">
-                  Don't show instructions by default
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <Version gameName="Tiles" />
     </div>
   );
 };
