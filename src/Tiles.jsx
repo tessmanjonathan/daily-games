@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { RefreshCw, Calendar, Info, X } from 'lucide-react';
 
-const TileGame = () => {
+const Tiles = () => {
   const [gameState, setGameState] = useState('playing');
   const [attempts, setAttempts] = useState(0);
   const [feedback, setFeedback] = useState('');
@@ -95,7 +95,7 @@ const TileGame = () => {
       selectedPositions.forEach(([i, j]) => {
         if (correctCount === 3) {
           setGameState('complete');
-          setFeedback(`Congratulations, you solved the Daily TILE in ${attempts + 1} ${attempts === 0 ? 'attempt' : 'attempts'}!`);
+          setFeedback(`Congratulations, you solved TILES for ${selectedDate.toISOString().split('T')[0]} in ${attempts + 1} ${attempts === 0 ? 'attempt' : 'attempts'}!`);
           // On win, all correct tiles turn green (handled by renderCell)
         } else if (correctCount === 0) {
           newUserPattern[i][j] = 1; // gray
@@ -165,7 +165,7 @@ const TileGame = () => {
     <div className="p-6 max-w-md mx-auto bg-white rounded-xl shadow-md">
       <div className="text-center mb-6">
         <div className="flex justify-between items-center mb-2">
-          <h1 className="text-2xl font-bold ml-8">Daily TILE</h1>
+          <h1 className="text-2xl font-bold ml-8">TILES</h1>
           <button 
             onClick={() => setShowInstructions(true)}
             className="p-2 text-gray-500 hover:text-gray-700"
@@ -255,4 +255,4 @@ const TileGame = () => {
   );
 };
 
-export default TileGame;
+export default Tiles;
