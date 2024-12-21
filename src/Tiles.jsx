@@ -234,10 +234,10 @@ const Tiles = () => {
               <X className="w-5 h-5" />
             </button>
             
-            <h2 className="text-xl font-bold mb-4">How to Play Daily TILE</h2>
+            <h2 className="text-xl font-bold mb-4">How to Play</h2>
             
             <div className="space-y-4">
-              <p>Welcome to Daily TILE! Here's how to play:</p>
+              <p>Welcome to Daily Tiles! Here's how to play:</p>
               <ul className="list-disc pl-6 space-y-2">
                 <li>There are 3 hidden tiles in the 4x4 grid</li>
                 <li>Select 3 tiles and click "Flip Tiles" to make a guess</li>

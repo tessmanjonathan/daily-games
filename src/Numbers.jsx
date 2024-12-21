@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Info, X, Delete, CornerDownLeft, Calendar } from 'lucide-react';
 
 const Numbers = () => {
-  const MAX_GUESSES = 6;
+  const MAX_GUESSES = 5;
   const NUMBER_LENGTH = 6;
   
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const [targetNumber, setTargetNumber] = useState('');
   const [currentGuess, setCurrentGuess] = useState('');
   const [guesses, setGuesses] = useState([]);
@@ -11,11 +13,19 @@ const Numbers = () => {
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [focusedIndex, setFocusedIndex] = useState(0);
+  const [showInstructions, setShowInstructions] = useState(() => {
+    const savedPreference = localStorage.getItem('numbersShowInstructions');
+    return savedPreference === null ? true : JSON.parse(savedPreference);
+  });
+  const [alwaysShowInstructions, setAlwaysShowInstructions] = useState(() => {
+    const savedPreference = localStorage.getItem('numbersAlwaysShowInstructions');
+    return savedPreference === null ? true : JSON.parse(savedPreference);
+  });
+  
   const inputRefs = useRef([]);
 
-  const generateDailyNumber = () => {
-    const today = new Date();
-    const dateString = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+  const generateDailyNumber = (date) => {
+    const dateString = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
     let hash = 0;
     for (let i = 0; i < dateString.length; i++) {
       hash = ((hash << 5) - hash) + dateString.charCodeAt(i);
@@ -31,9 +41,9 @@ const Numbers = () => {
   };
 
   useEffect(() => {
-    setTargetNumber(generateDailyNumber());
+    setTargetNumber(generateDailyNumber(selectedDate));
     inputRefs.current = Array(NUMBER_LENGTH).fill().map((_, i) => inputRefs.current[i] || React.createRef());
-  }, []);
+  }, [selectedDate]);
 
   const isWithinTwo = (guess, target) => {
     const g = parseInt(guess);
@@ -101,7 +111,8 @@ const Numbers = () => {
     const newGuesses = [...guesses, { number: currentGuess, results }];
     setGuesses(newGuesses);
     
-    if (currentGuess === targetNumber || newGuesses.length === MAX_GUESSES) {
+    const isWin = currentGuess === targetNumber;
+    if (isWin || newGuesses.length === MAX_GUESSES) {
       setGameOver(true);
     }
     
@@ -113,12 +124,35 @@ const Numbers = () => {
     .fill()
     .map((_, rowIndex) => Array(NUMBER_LENGTH).fill('empty'));
 
-  const resetGame = () => {
-    setTargetNumber(generateDailyNumber());
+  const handleDateChange = (event) => {
+    const newDate = new Date(event.target.value);
+    setSelectedDate(newDate);
+    setTargetNumber(generateDailyNumber(newDate));
+    startNewGame();
+  };
+
+  const startNewGame = () => {
     setGuesses([]);
     setGameOver(false);
     setCurrentGuess('');
     setFocusedIndex(0);
+  };
+
+  const playPreviousDay = () => {
+    const previousDate = new Date(selectedDate);
+    previousDate.setDate(previousDate.getDate() - 1);
+    setSelectedDate(previousDate);
+    setTargetNumber(generateDailyNumber(previousDate));
+    startNewGame();
+  };
+
+  const handleCloseInstructions = (dontShowAgain) => {
+    setShowInstructions(false);
+    if (dontShowAgain) {
+      setAlwaysShowInstructions(false);
+      localStorage.setItem('numbersAlwaysShowInstructions', 'false');
+    }
+    localStorage.setItem('numbersShowInstructions', 'false');
   };
 
   useEffect(() => {
@@ -127,15 +161,25 @@ const Numbers = () => {
   }, [currentGuess, gameOver]);
 
   return (
-    <div className="p-6">
+    <div className="p-6 relative">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Number</h2>
-        <button 
-          onClick={resetGame}
-          className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-        >
-          Reset
-        </button>
+        <h2 className="text-2xl font-bold">Numbers</h2>
+        <div className="flex items-center gap-4">
+          <input
+            type="date"
+            value={selectedDate.toISOString().split('T')[0]}
+            onChange={handleDateChange}
+            max={new Date().toISOString().split('T')[0]}
+            className="border rounded px-2 py-1"
+          />
+          <Calendar className="w-5 h-5 text-gray-500" />
+          <button 
+            onClick={() => setShowInstructions(true)}
+            className="p-2 text-gray-500 hover:text-gray-700"
+          >
+            <Info className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       {showAlert && (
@@ -198,48 +242,115 @@ const Numbers = () => {
         ))}
       </div>
 
-      <div className="mt-6 space-y-2 max-w-xs mx-auto">
-        <div className="grid grid-cols-5 gap-2">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((number) => (
+      {!gameOver && (
+        <div className="mt-6 max-w-md mx-auto">
+          <div className="grid grid-cols-6 gap-2">
+            {[0, 1, 2, 3, 4].map((number) => (
+              <button
+                key={number}
+                onClick={() => handleDigitInput(number.toString())}
+                className="p-4 bg-gray-200 rounded hover:bg-gray-300 font-bold h-14"
+                disabled={currentGuess.length >= NUMBER_LENGTH}
+              >
+                {number}
+              </button>
+            ))}
             <button
-              key={number}
-              onClick={() => handleDigitInput(number.toString())}
-              className="p-4 bg-gray-200 rounded hover:bg-gray-300 font-bold"
-              disabled={gameOver || currentGuess.length >= NUMBER_LENGTH}
+              onClick={() => setCurrentGuess(prev => {
+                const newGuess = prev.slice(0, -1);
+                setFocusedIndex(Math.max(0, newGuess.length));
+                return newGuess;
+              })}
+              className="p-4 bg-blue-500 text-white rounded hover:bg-blue-600 h-14 flex items-center justify-center"
+              disabled={currentGuess.length === 0}
             >
-              {number}
+              <Delete className="w-6 h-6" />
             </button>
-          ))}
+            {[5, 6,7, 8, 9].map((number) => (
+              <button
+                key={number}
+                onClick={() => handleDigitInput(number.toString())}
+                className="p-4 bg-gray-200 rounded hover:bg-gray-300 font-bold h-14"
+                disabled={currentGuess.length >= NUMBER_LENGTH}
+              >
+                {number}
+              </button>
+            ))}
+            
+            <button
+              onClick={submitGuess}
+              className="p-4 bg-green-500 text-white rounded hover:bg-green-600 font-bold disabled:bg-gray-300 h-14 flex items-center justify-center"
+              disabled={currentGuess.length !== NUMBER_LENGTH}
+            >
+              <CornerDownLeft className="w-6 h-6" />
+            </button>
+          </div>
         </div>
-        <div className="flex gap-2 justify-center">
-          <button
-            onClick={() => setCurrentGuess(prev => prev.slice(0, -1))}
-            className="flex-1 p-4 bg-gray-300 rounded hover:bg-gray-400 font-bold"
-            disabled={gameOver || currentGuess.length === 0}
-          >
-            Backspace
-          </button>
-          <button
-            onClick={submitGuess}
-            className="flex-1 p-4 bg-green-500 text-white rounded hover:bg-green-600 font-bold disabled:bg-gray-300"
-            disabled={gameOver || currentGuess.length !== NUMBER_LENGTH}
-          >
-            Enter
-          </button>
-        </div>
-      </div>
+      )}
 
       {gameOver && (
-        <div className="mt-6 text-center">
-          {currentGuess === targetNumber ? (
-            <div className="text-green-600 font-bold">
-              Congratulations! You won in {guesses.length} guesses!
+        <div className="mt-8 space-y-4 max-w-md mx-auto">
+          <div className={`text-xl font-bold text-center ${
+            guesses[guesses.length - 1].number === targetNumber ? 'text-green-600' : 'text-red-600'
+          }`}>
+            {guesses[guesses.length - 1].number === targetNumber ? (
+              <>Congratulations! You solved NUMBERS for {selectedDate.toLocaleDateString()} in {guesses.length} {guesses.length === 1 ? 'guess' : 'guesses'}!</>
+            ) : (
+              <>Game Over! The number was {targetNumber}</>
+            )}
+          </div>
+          
+          <div className="flex justify-center">
+            <button
+              onClick={playPreviousDay}
+              className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 text-lg"
+            >
+              <Calendar className="w-5 h-5" /> Play Previous Day
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showInstructions && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full relative">
+            <button 
+              onClick={() => handleCloseInstructions(false)}
+              className="absolute right-4 top-4 text-gray-500 hover:text-gray-700"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            
+            <h2 className="text-xl font-bold mb-4">How to Play</h2>
+            
+            <div className="space-y-4">
+              <p>Welcome to Daily Numbers! Here's how to play:</p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>Try to guess today's 6-digit number within 5 attempts</li>
+                <li>After each guess, you'll get feedback:</li>
+                <ul className="list-disc pl-6 space-y-1">
+                  <li><span className="text-green-500 font-bold">Green</span> means the digit is correct</li>
+                  <li><span className="text-yellow-500 font-bold">Yellow</span> means the digit is within 2 numbers of the correct digit (including wraparound: 9↔0)</li>
+                  <li><span className="text-gray-500 font-bold">Gray</span> means the digit is not close</li>
+                </ul>
+                <li><span className="font-bold">Remember!</span> Numbers wrap around: for example, 9 is within 2 of 0 and 1, and 0 is within 2 of 8 and 9</li>
+                <li>You can play previous days' puzzles using the date selector</li>
+              </ul>
+              <p>Good luck!</p>
+              
+              <div className="mt-6 flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="dontShowAgain"
+                  className="rounded"
+                  onChange={(e) => handleCloseInstructions(e.target.checked)}
+                />
+                <label htmlFor="dontShowAgain" className="text-sm text-gray-600">
+                  Don't show instructions by default
+                </label>
+              </div>
             </div>
-          ) : (
-            <div className="text-red-600 font-bold">
-              Game Over! The number was {targetNumber}
-            </div>
-          )}
+          </div>
         </div>
       )}
     </div>
