@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "prepare": "node scripts/install-hooks.js",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "lucide-react": "^0.469.0",
