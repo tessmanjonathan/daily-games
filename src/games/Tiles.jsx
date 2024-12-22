@@ -10,6 +10,7 @@ const Tiles = () => {
   const [feedback, setFeedback] = useState('');
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [userPattern, setUserPattern] = useState(Array(4).fill().map(() => Array(4).fill(0)));
+  const [originalState, setOriginalState] = useState(Array(4).fill().map(() => Array(4).fill(0)));
   const [showInstructions, setShowInstructions] = useState(() => {
     const savedPreference = localStorage.getItem('gamesShowInstructions');
     return savedPreference === null ? true : JSON.parse(savedPreference);
@@ -72,16 +73,23 @@ const Tiles = () => {
     setTimeout(() => {
       setIsSpinning(false);
       setAttempts(prev => prev + 1);
+      // Create new originalState array
+      const newOriginalState = [...originalState].map(row => [...row]);
+      
       selectedPositions.forEach(([i, j]) => {
         if (correctCount === 3) {
           setGameState('complete');
           setFeedback(`Congratulations, you solved TILES for ${selectedDate.toISOString().split('T')[0]} in ${attempts + 1} ${attempts === 0 ? 'attempt' : 'attempts'}!`);
         } else if (correctCount === 0) {
           newUserPattern[i][j] = 1; // gray
+          newOriginalState[i][j] = 1; // store gray in original state
         } else {
           newUserPattern[i][j] = 3; // yellow
+          newOriginalState[i][j] = 3; // store yellow in original state
         }
       });
+      
+      setOriginalState(newOriginalState);
       
       setUserPattern(newUserPattern);
       
@@ -106,14 +114,12 @@ const Tiles = () => {
   const handleCellClick = (row, col) => {
     if (gameState !== 'playing') return;
     
-    // Skip if the cell is already marked as incorrect (gray)
-    if (userPattern[row][col] === 1) return;
-    
     const newUserPattern = [...userPattern];
     newUserPattern[row] = [...newUserPattern[row]];
     
     if (newUserPattern[row][col] === 4) {
-      newUserPattern[row][col] = 0;
+      // If unselecting a tile, return it to its original state
+      newUserPattern[row][col] = originalState[row][col];
     } else {
       const currentSelections = newUserPattern.flat().filter(cell => cell === 4).length;
       if (currentSelections >= 3) {
@@ -130,6 +136,7 @@ const Tiles = () => {
   const startNewGame = () => {
     setGameState('playing');
     setUserPattern(Array(4).fill().map(() => Array(4).fill(0)));
+    setOriginalState(Array(4).fill().map(() => Array(4).fill(0)));
     setFeedback('');
     setAttempts(0);
     setIsSpinning(false);
@@ -156,18 +163,17 @@ const Tiles = () => {
     const cellState = userPattern[row][col];
     const isComplete = gameState === 'complete';
     const isSelected = cellState === 4;
-    const isDisabled = cellState === 1;
     
     return (
       <div
         data-row={row}
         data-col={col}
-        onClick={() => !isDisabled && handleCellClick(row, col)}
+        onClick={() => handleCellClick(row, col)}
         className={`w-14 h-14 transition-all duration-200
           ${isSelected && isSpinning ? 'animate-[spin_0.6s_ease-in-out_1]' : ''}
           ${getColorClass(cellState)}
           ${cellState === 4 ? 'border-4 border-blue-500' : 'border-2 border-gray-300'}
-          ${!isDisabled && gameState === 'playing' ? 'hover:border-blue-300 cursor-pointer' : 'cursor-not-allowed'}
+          ${gameState === 'playing' ? 'hover:border-blue-300 cursor-pointer' : 'cursor-not-allowed'}
           ${isComplete && dailyPattern[row][col] === 1 ? 'bg-green-500 border-2 border-green-600' : ''}`}
       />
     );
