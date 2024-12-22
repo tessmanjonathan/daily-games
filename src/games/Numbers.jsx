@@ -304,9 +304,9 @@ const Numbers = () => {
       <Instructions
         isOpen={showInstructions}
         onClose={() => setShowInstructions(false)}
-        title="How to Play"
+        title="Welcome to Daily Numbers!"
       >
-        <p>Welcome to Daily Numbers! Here's how to play:</p>
+        <p>Here's how to play:</p>
         <ul className="list-disc pl-6 space-y-2">
           <li>Try to guess today's 6-digit number within 5 attempts</li>
           <li>After each guess, you'll get feedback:</li>

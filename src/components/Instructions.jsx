@@ -40,7 +40,7 @@ const Instructions = ({
               onChange={(e) => handleCloseInstructions(e.target.checked)}
             />
             <label htmlFor="dontShowAgain" className="text-sm text-gray-600">
-              Don't show instructions by default
+              Don't show instructions again
             </label>
           </div>
         </div>

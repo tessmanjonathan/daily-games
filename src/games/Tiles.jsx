@@ -8,7 +8,11 @@ const Tiles = () => {
   const [gameState, setGameState] = useState('playing');
   const [attempts, setAttempts] = useState(0);
   const [feedback, setFeedback] = useState('');
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today;
+  });
   const [userPattern, setUserPattern] = useState(Array(4).fill().map(() => Array(4).fill(0)));
   const [originalState, setOriginalState] = useState(Array(4).fill().map(() => Array(4).fill(0)));
   const [showInstructions, setShowInstructions] = useState(() => {
@@ -79,7 +83,7 @@ const Tiles = () => {
       selectedPositions.forEach(([i, j]) => {
         if (correctCount === 3) {
           setGameState('complete');
-          setFeedback(`Congratulations, you solved TILES for ${selectedDate.toISOString().split('T')[0]} in ${attempts + 1} ${attempts === 0 ? 'attempt' : 'attempts'}!`);
+          setFeedback(`Congratulations, you solved TILES for ${selectedDate.toLocaleDateString()} in ${attempts + 1} ${attempts === 0 ? 'attempt' : 'attempts'}!`);
         } else if (correctCount === 0) {
           newUserPattern[i][j] = 1; // gray
           newOriginalState[i][j] = 1; // store gray in original state
@@ -154,7 +158,7 @@ const Tiles = () => {
     switch (state) {
       case 1: return 'bg-gray-300';
       case 3: return 'bg-yellow-300';
-      case 4: return '';
+      case 4: return 'bg-blue-200';
       default: return 'bg-white';
     }
   };
@@ -179,7 +183,15 @@ const Tiles = () => {
     );
   };
 
-  const today = new Date().toISOString().split('T')[0];
+  const formatDateForInput = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   return (
     <div className="p-6 relative">
@@ -189,9 +201,9 @@ const Tiles = () => {
           <div className="flex items-center gap-4">
             <input
               type="date"
-              value={selectedDate.toISOString().split('T')[0]}
+              value={formatDateForInput(selectedDate)}
               onChange={handleDateChange}
-              max={today}
+              max={formatDateForInput(today)}
               className="border rounded px-2 py-1"
             />
             <button 
@@ -244,9 +256,9 @@ const Tiles = () => {
       <Instructions
         isOpen={showInstructions}
         onClose={() => setShowInstructions(false)}
-        title="How to Play"
+        title="Welcome to Daily Tiles!"
       >
-        <p>Welcome to Daily Tiles! Here's how to play:</p>
+        <p>Here's how to play:</p>
         <ul className="list-disc pl-6 space-y-2">
           <li>There are 3 hidden tiles in the 4x4 grid</li>
           <li>Select 3 tiles to make a guess</li>
