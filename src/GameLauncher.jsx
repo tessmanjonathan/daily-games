@@ -14,28 +14,33 @@ const GameLauncher = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
-    const path = window.location.pathname.toLowerCase();
-    const gameId = Object.keys(gamesConfig.games).find(id => path.includes(id));
+    // Get game ID from hash on initial load
+    const hash = window.location.hash.slice(1).toLowerCase();
+    const gameId = Object.keys(gamesConfig.games).find(id => hash === id);
     if (gameId) {
       setCurrentGame(gameId);
+    } else if (currentGame) {
+      // If no hash but we have a current game, set the hash
+      window.location.hash = currentGame;
     }
 
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    // Handle hash changes
+    const handleHashChange = () => {
+      const hash = window.location.hash.slice(1).toLowerCase();
+      const gameId = Object.keys(gamesConfig.games).find(id => hash === id);
+      if (gameId) {
+        setCurrentGame(gameId);
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
-
-  const handlePopState = () => {
-    const path = window.location.pathname.toLowerCase();
-    const gameId = Object.keys(gamesConfig.games).find(id => path.includes(id));
-    if (gameId) {
-      setCurrentGame(gameId);
-    }
-  };
 
   const switchGame = (gameId) => {
     setCurrentGame(gameId);
     setIsMenuOpen(false);
-    window.history.pushState({}, '', `/${gameId}`);
+    window.location.hash = gameId;
   };
 
   // Get the current game component

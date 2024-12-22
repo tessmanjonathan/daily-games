@@ -244,7 +244,7 @@ const Tiles = () => {
               <Calendar className="w-4 h-4" /> Play Previous Day
             </button>
             <a
-              href="/daily-games/numbers"
+              href="#numbers"
               className="block w-full p-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors text-center"
             >
               Try out today's Daily Number game

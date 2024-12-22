@@ -290,13 +290,19 @@ const Numbers = () => {
             )}
           </div>
           
-          <div className="flex justify-center">
+          <div className="space-y-2">
             <button
               onClick={playPreviousDay}
-              className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 text-lg"
+              className="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
             >
-              <Calendar className="w-5 h-5" /> Play Previous Day
+              <Calendar className="w-4 h-4" /> Play Previous Day
             </button>
+            <a
+              href="#tiles"
+              className="block w-full p-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors text-center"
+            >
+              Try out today's Daily Tile game
+            </a>
           </div>
         </div>
       )}
