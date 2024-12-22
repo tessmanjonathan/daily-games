@@ -218,12 +218,20 @@ const Tiles = () => {
         )}
 
         {gameState === 'complete' && (
-          <button
-            onClick={playPreviousDay}
-            className="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
-          >
-            <Calendar className="w-4 h-4" /> Play Previous Day
-          </button>
+          <div className="space-y-2">
+            <button
+              onClick={playPreviousDay}
+              className="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
+            >
+              <Calendar className="w-4 h-4" /> Play Previous Day
+            </button>
+            <a
+              href="/daily-games/numbers"
+              className="block w-full p-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors text-center"
+            >
+              Try out today's Daily Number game
+            </a>
+          </div>
         )}
       </div>
 
