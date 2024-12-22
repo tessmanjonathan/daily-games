@@ -73,13 +73,10 @@ const Tiles = () => {
     }
     
     const newUserPattern = [...userPattern].map(row => [...row]);
-    
     setTimeout(() => {
       setIsSpinning(false);
       setAttempts(prev => prev + 1);
-      // Create new originalState array
       const newOriginalState = [...originalState].map(row => [...row]);
-      
       selectedPositions.forEach(([i, j]) => {
         if (correctCount === 3) {
           setGameState('complete');
@@ -88,8 +85,15 @@ const Tiles = () => {
           newUserPattern[i][j] = 1; // gray
           newOriginalState[i][j] = 1; // store gray in original state
         } else {
-          newUserPattern[i][j] = 3; // yellow
-          newOriginalState[i][j] = 3; // store yellow in original state
+          // Only set to yellow if it wasn't previously gray
+          if (originalState[i][j] !== 1) {
+            newUserPattern[i][j] = 3; // yellow
+            newOriginalState[i][j] = 3; // store yellow in original state
+          } else {
+            // Keep it gray if it was previously gray
+            newUserPattern[i][j] = 1;
+            newOriginalState[i][j] = 1;
+          }
         }
       });
       
@@ -102,7 +106,7 @@ const Tiles = () => {
       } else if (correctCount === 0) {
         setFeedback('None of these squares are correct.');
       }
-    }, 650); // Slightly longer than the animation duration
+    }, 650);
   }, [gameState, userPattern, dailyPattern, attempts, selectedDate, isSpinning]);
 
   useEffect(() => {
