@@ -6,12 +6,11 @@ const gameComponents = {
   tiles: lazy(() => import('./games/Tiles.jsx')),
   numbers: lazy(() => import('./games/Numbers.jsx')),
   ninesquare: lazy(() => import('./games/NineSquare.jsx')),
+  '404': lazy(() => import('./games/NotFoundGame.jsx')),
 };
 
 const GameLauncher = () => {
-  const [currentGame, setCurrentGame] = useState(
-    Object.values(gamesConfig.games).find(game => game.enabled)?.id
-  );
+  const [currentGame, setCurrentGame] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(() => {
@@ -35,24 +34,42 @@ const GameLauncher = () => {
   }, [darkMode]);
 
   useEffect(() => {
-    const hash = window.location.hash.slice(1).toLowerCase();
-    const gameId = Object.keys(gamesConfig.games).find(id => hash === id);
-    if (gameId) {
-      setCurrentGame(gameId);
-    } else if (currentGame) {
-      window.location.hash = currentGame;
-    }
-
-    const handleHashChange = () => {
+    const handleRoute = () => {
+      // Get the current hash without the # symbol
       const hash = window.location.hash.slice(1).toLowerCase();
-      const gameId = Object.keys(gamesConfig.games).find(id => hash === id);
-      if (gameId) {
-        setCurrentGame(gameId);
+      
+      // If there's no hash, set it to the first enabled game
+      if (!hash) {
+        const defaultGame = Object.values(gamesConfig.games).find(game => game.enabled)?.id;
+        if (defaultGame) {
+          window.location.hash = defaultGame;
+          setCurrentGame(defaultGame);
+          return;
+        }
+      }
+
+      // Check if the game exists and is enabled
+      const game = Object.values(gamesConfig.games).find(
+        game => game.id === hash && game.enabled
+      );
+
+      if (game) {
+        // Valid game found - set it as current
+        setCurrentGame(game.id);
+      } else if (hash !== '404') {
+        // Invalid game and not already on 404 - redirect to 404
+        window.location.hash = '404';
+        setCurrentGame('404');
+      } else {
+        // We're on the 404 page
+        setCurrentGame('404');
       }
     };
 
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
+    // Handle initial route and subsequent changes
+    handleRoute();
+    window.addEventListener('hashchange', handleRoute);
+    return () => window.removeEventListener('hashchange', handleRoute);
   }, []);
 
   const switchGame = (gameId) => {
