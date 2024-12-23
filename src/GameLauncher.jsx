@@ -82,6 +82,7 @@ const GameLauncher = () => {
 
   return (
     <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-100'}`}>
+      {/* Navbar */}
       <nav className={`${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-md`}>
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex justify-between h-16">
@@ -116,13 +117,19 @@ const GameLauncher = () => {
         </div>
       </nav>
 
+      {/* Overlay */}
+      {(isMenuOpen || isSettingsOpen) && (
+        <div className="fixed inset-0 z-40">
+          <div
+            className="absolute inset-0 bg-black bg-opacity-50"
+            onClick={() => {setIsMenuOpen(false); setIsSettingsOpen(false);}}
+          />
+        </div>
+      )}
+
       {/* Settings Menu */}
       {isSettingsOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div
-            className="absolute inset-0 bg-black bg-opacity-50"
-            onClick={() => setIsSettingsOpen(false)}
-          />
           <div className={`relative ${
             darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'
           } rounded-lg shadow-xl p-6 w-96`}>
@@ -162,79 +169,69 @@ const GameLauncher = () => {
         </div>
       )}
 
-      {/* Games Menu */}
+      {/* Sliding Games Menu */}
       <div
-        className={`fixed inset-0 z-40 transform transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-y-0 left-0 z-40 w-64 transform transition-transform duration-300 ease-in-out ${
           isMenuOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-      >
-        <div
-          className="absolute inset-0 bg-black bg-opacity-50 transition-opacity duration-300"
-          onClick={() => setIsMenuOpen(false)}
-        />
-
-        <div className={`absolute inset-y-0 left-0 w-64 ${
-          darkMode ? 'bg-gray-800' : 'bg-white'
-        } shadow-lg transform transition-transform duration-300 ease-in-out`}>
-          <div className="p-4">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                Games
-              </h2>
+        } ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg`}>
+        <div className="p-4">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+              Games
+            </h2>
+            <button
+              onClick={() => setIsMenuOpen(false)}
+              className={`p-2 rounded-full ${
+                darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
+              }`}
+            >
+              <span className="sr-only">Close menu</span>
+              <svg className={`w-6 h-6 ${darkMode ? 'text-white' : 'text-gray-900'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          
+          <div className="space-y-1">
+            {Object.values(gamesConfig.games)
+              .filter(game => game.enabled)
+              .map((game) => (
               <button
-                onClick={() => setIsMenuOpen(false)}
-                className={`p-2 rounded-full ${
-                  darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
+                key={game.id}
+                onClick={() => switchGame(game.id)}
+                className={`w-full px-4 py-3 text-left rounded-lg transition-colors relative ${
+                  currentGame === game.id
+                    ? 'bg-blue-500 text-white'
+                    : darkMode 
+                      ? 'hover:bg-gray-700 text-gray-300'
+                      : 'hover:bg-gray-100 text-gray-700'
                 }`}
               >
-                <span className="sr-only">Close menu</span>
-                <svg className={`w-6 h-6 ${darkMode ? 'text-white' : 'text-gray-900'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <div className="font-medium flex items-center gap-2">
+                  {game.title}
+                  {hasTag(game, 'new') && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                      NEW
+                    </span>
+                  )}
+                </div>
+                <div className={`text-sm ${
+                  currentGame === game.id 
+                    ? 'text-blue-100' 
+                    : darkMode ? 'text-gray-400' : 'text-gray-500'
+                }`}>
+                  {game.description}
+                </div>
               </button>
-            </div>
-            
-            <div className="space-y-1">
-              {Object.values(gamesConfig.games)
-                .filter(game => game.enabled)
-                .map((game) => (
-                <button
-                  key={game.id}
-                  onClick={() => switchGame(game.id)}
-                  className={`w-full px-4 py-3 text-left rounded-lg transition-colors relative ${
-                    currentGame === game.id
-                      ? 'bg-blue-500 text-white'
-                      : darkMode 
-                        ? 'hover:bg-gray-700 text-gray-300'
-                        : 'hover:bg-gray-100 text-gray-700'
-                  }`}
-                >
-                  <div className="font-medium flex items-center gap-2">
-                    {game.title}
-                    {hasTag(game, 'new') && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                        NEW
-                      </span>
-                    )}
-                  </div>
-                  <div className={`text-sm ${
-                    currentGame === game.id 
-                      ? 'text-blue-100' 
-                      : darkMode ? 'text-gray-400' : 'text-gray-500'
-                  }`}>
-                    {game.description}
-                  </div>
-                </button>
-              ))}
-            </div>
-            <div className={`absolute bottom-0 left-0 right-0 p-4 ${
-              darkMode ? 'text-gray-400' : 'text-gray-600'
-            }`}>
-              Version 1.3.0
-              <p className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                © {new Date().getFullYear()}
-              </p>
-            </div>
+            ))}
+          </div>
+          <div className={`absolute bottom-0 left-0 right-0 p-4 ${
+            darkMode ? 'text-gray-400' : 'text-gray-600'
+          }`}>
+            Version 1.3.0
+            <p className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+              © {new Date().getFullYear()}
+            </p>
           </div>
         </div>
       </div>
