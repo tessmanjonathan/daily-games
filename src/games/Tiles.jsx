@@ -88,8 +88,15 @@ const Tiles = () => {
           newUserPattern[i][j] = 1; // gray
           newOriginalState[i][j] = 1; // store gray in original state
         } else {
-          newUserPattern[i][j] = 3; // yellow
-          newOriginalState[i][j] = 3; // store yellow in original state
+          // Only set to yellow if it wasn't previously gray (sticky gray implementation)
+          if (originalState[i][j] !== 1) {
+            newUserPattern[i][j] = 3; // yellow
+            newOriginalState[i][j] = 3; // store yellow in original state
+          } else {
+            // Keep it gray if it was previously gray
+            newUserPattern[i][j] = 1;
+            newOriginalState[i][j] = 1;
+          }
         }
       });
       
@@ -160,7 +167,7 @@ const Tiles = () => {
     }
     
     switch (state) {
-      case 1: // Wrong guess (gray) - using a lighter gray in dark mode for better contrast
+      case 1: // Gray (incorrect) - using your dark mode colors
         return 'bg-gray-300 dark:bg-gray-700';
       case 3: // Yellow indicator
         return 'bg-yellow-300 dark:bg-yellow-500';

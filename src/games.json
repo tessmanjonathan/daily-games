@@ -5,9 +5,9 @@
       "title": "Tiles",
       "description": "Find the hidden tiles in the grid",
       "path": "src/games/Tiles.jsx",
-      "version": "1.0.8",
-      "lastUpdated": "2024-12-23T05:29:45.546Z",
-      "commitHash": "726c7da4182b3f4cae8916c1d07a82ec62a2d49a",
+      "version": "1.0.9",
+      "lastUpdated": "2024-12-23T21:52:16.666Z",
+      "commitHash": "50dbabedba8b17f97b319b32cd090943ca6bd9af",
       "enabled": true,
       "tags": {
         "new": false
