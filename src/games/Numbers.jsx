@@ -151,33 +151,38 @@ const Numbers = () => {
 
   return (
     <div className="p-6 relative">
-      {/* Game Header Row */}
+      {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Numbers</h2>
+        <h2 className="text-2xl font-bold dark:text-white">Numbers</h2>
         <div className="flex items-center gap-4">
           <input
             type="date"
             value={selectedDate.toISOString().split('T')[0]}
             onChange={handleDateChange}
             max={new Date().toISOString().split('T')[0]}
-            className="border rounded px-2 py-1"
+            className="border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600 
+              focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 dark-mode-date
+              [&::-webkit-calendar-picker-indicator]:dark:invert
+              [&::-webkit-calendar-picker-indicator]:dark:opacity-70
+              [&::-webkit-calendar-picker-indicator]:hover:cursor-pointer"
           />
           <button 
             onClick={() => setShowInstructions(true)}
-            className="p-2 text-gray-500 hover:text-gray-700"
+            className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
           >
             <Info className="w-5 h-5" />
           </button>
         </div>
       </div>
-      
-      {/* Game Content */}
+
+      {/* Alert Message */}
       {showAlert && (
-        <div className="mb-4 p-4 bg-yellow-100 text-yellow-800 rounded">
+        <div className="mb-4 p-4 bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200 rounded">
           {alertMessage}
         </div>
       )}
 
+      {/* Past Guesses Grid */}
       <div className="grid gap-2">
         {guesses.map((guess, rowIndex) => (
           <div key={rowIndex} className="flex gap-2 justify-center">
@@ -186,8 +191,12 @@ const Numbers = () => {
                 key={`${rowIndex}-${digitIndex}`}
                 className={`
                   w-12 h-12 flex items-center justify-center text-xl font-bold text-white rounded
-                  ${guess.results[digitIndex] === 'correct' ? 'bg-green-500' : 
-                    guess.results[digitIndex] === 'close' ? 'bg-yellow-500' : 'bg-gray-400'}
+                  ${guess.results[digitIndex] === 'correct' 
+                    ? 'bg-green-500 dark:bg-green-500' 
+                    : guess.results[digitIndex] === 'close'
+                    ? 'bg-yellow-500 dark:bg-yellow-500' 
+                    : 'bg-gray-400 dark:bg-gray-600'}
+                  transition-colors
                 `}
               >
                 {digit}
@@ -196,15 +205,23 @@ const Numbers = () => {
           </div>
         ))}
 
+        {/* Current Guess */}
         {!gameOver && (
           <div className="flex gap-2 justify-center">
             {Array(NUMBER_LENGTH).fill().map((_, index) => (
               <div
                 key={`current-${index}`}
                 className={`
-                  w-12 h-12 flex items-center justify-center text-xl font-bold border-2 rounded cursor-pointer
-                  ${index === focusedIndex ? 'border-blue-500' : 
-                    currentGuess[index] ? 'border-gray-400' : 'border-gray-200'}
+                  w-12 h-12 flex items-center justify-center text-xl font-bold rounded
+                  border-2 cursor-pointer transition-all
+                  dark:text-white
+                  ${index === focusedIndex 
+                    ? 'border-blue-500 dark:border-blue-400' 
+                    : currentGuess[index]
+                    ? 'border-gray-400 dark:border-gray-500' 
+                    : 'border-gray-200 dark:border-gray-700'}
+                  hover:border-blue-300 dark:hover:border-blue-400
+                  bg-white dark:bg-gray-700
                 `}
                 onClick={() => handleBoxClick(index)}
               >
@@ -220,18 +237,20 @@ const Numbers = () => {
           </div>
         )}
 
+        {/* Empty Rows */}
         {remainingRows.slice(gameOver ? 0 : 1).map((row, rowIndex) => (
           <div key={`empty-${rowIndex}`} className="flex gap-2 justify-center">
             {row.map((_, digitIndex) => (
               <div
                 key={`empty-${rowIndex}-${digitIndex}`}
-                className="w-12 h-12 border-2 border-gray-200 rounded"
+                className="w-12 h-12 border-2 border-gray-200 dark:border-gray-700 rounded"
               />
             ))}
           </div>
         ))}
       </div>
 
+      {/* Number Pad */}
       {!gameOver && (
         <div className="mt-6 max-w-md mx-auto">
           <div className="grid grid-cols-6 gap-2">
@@ -239,37 +258,46 @@ const Numbers = () => {
               <button
                 key={number}
                 onClick={() => handleDigitInput(number.toString())}
-                className="p-4 bg-gray-200 rounded hover:bg-gray-300 font-bold h-14"
+                className="p-4 h-14 font-bold rounded transition-colors
+                  bg-gray-200 hover:bg-gray-300 
+                  dark:bg-gray-700 dark:hover:bg-gray-600
+                  dark:text-white
+                  disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={currentGuess.length >= NUMBER_LENGTH}
               >
                 {number}
               </button>
             ))}
             <button
-              onClick={() => setCurrentGuess(prev => {
-                const newGuess = prev.slice(0, -1);
-                setFocusedIndex(Math.max(0, newGuess.length));
-                return newGuess;
-              })}
-              className="p-4 bg-blue-500 text-white rounded hover:bg-blue-600 h-14 flex items-center justify-center"
+              onClick={() => setCurrentGuess(prev => prev.slice(0, -1))}
+              className="p-4 h-14 rounded transition-colors
+                bg-blue-500 hover:bg-blue-600 text-white
+                disabled:opacity-50 disabled:cursor-not-allowed
+                flex items-center justify-center"
               disabled={currentGuess.length === 0}
             >
               <Delete className="w-6 h-6" />
             </button>
-            {[5, 6,7, 8, 9].map((number) => (
+            {[5, 6, 7, 8, 9].map((number) => (
               <button
                 key={number}
                 onClick={() => handleDigitInput(number.toString())}
-                className="p-4 bg-gray-200 rounded hover:bg-gray-300 font-bold h-14"
+                className="p-4 h-14 font-bold rounded transition-colors
+                  bg-gray-200 hover:bg-gray-300 
+                  dark:bg-gray-700 dark:hover:bg-gray-600
+                  dark:text-white
+                  disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={currentGuess.length >= NUMBER_LENGTH}
               >
                 {number}
               </button>
             ))}
-            
             <button
               onClick={submitGuess}
-              className="p-4 bg-green-500 text-white rounded hover:bg-green-600 font-bold disabled:bg-gray-300 h-14 flex items-center justify-center"
+              className="p-4 h-14 rounded transition-colors
+                bg-green-500 hover:bg-green-600 text-white
+                disabled:bg-gray-300 dark:disabled:bg-gray-600
+                flex items-center justify-center"
               disabled={currentGuess.length !== NUMBER_LENGTH}
             >
               <CornerDownLeft className="w-6 h-6" />
@@ -278,10 +306,13 @@ const Numbers = () => {
         </div>
       )}
 
+      {/* Game Over State */}
       {gameOver && (
         <div className="mt-8 space-y-4 max-w-md mx-auto">
           <div className={`text-xl font-bold text-center ${
-            guesses[guesses.length - 1].number === targetNumber ? 'text-green-600' : 'text-red-600'
+            guesses[guesses.length - 1].number === targetNumber 
+              ? 'text-green-600 dark:text-green-400' 
+              : 'text-red-600 dark:text-red-400'
           }`}>
             {guesses[guesses.length - 1].number === targetNumber ? (
               <>Congratulations! You solved NUMBERS for {selectedDate.toLocaleDateString()} in {guesses.length} {guesses.length === 1 ? 'guess' : 'guesses'}!</>
@@ -293,20 +324,20 @@ const Numbers = () => {
           <div className="space-y-2">
             <button
               onClick={playPreviousDay}
-              className="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
+              className="w-full p-2 bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors flex items-center justify-center gap-2"
             >
               <Calendar className="w-4 h-4" /> Play Previous Day
             </button>
             <a
               href="#tiles"
-              className="block w-full p-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors text-center"
+              className="block w-full p-2 bg-green-500 hover:bg-green-600 text-white rounded transition-colors text-center"
             >
               Try out today's Daily Tile game
             </a>
           </div>
         </div>
       )}
-      
+
       <Instructions
         isOpen={showInstructions}
         onClose={() => setShowInstructions(false)}
@@ -317,9 +348,9 @@ const Numbers = () => {
           <li>Try to guess today's 6-digit number within 5 attempts</li>
           <li>After each guess, you'll get feedback:</li>
           <ul className="list-disc pl-6 space-y-1">
-            <li><span className="text-green-500 font-bold">Green</span> means the digit is correct</li>
-            <li><span className="text-yellow-500 font-bold">Yellow</span> means the digit is within 2 numbers of the correct digit (including wraparound: 9↔0)</li>
-            <li><span className="text-gray-500 font-bold">Gray</span> means the digit is not close</li>
+            <li><span className="text-green-500 dark:text-green-400 font-bold">Green</span> means the digit is correct</li>
+            <li><span className="text-yellow-500 dark:text-yellow-400 font-bold">Yellow</span> means the digit is within 2 numbers of the correct digit (including wraparound: 9↔0)</li>
+            <li><span className="text-gray-500 dark:text-gray-400 font-bold">Gray</span> means the digit is not close</li>
           </ul>
           <li><span className="font-bold">Remember!</span> Numbers wrap around: for example, 9 is within 2 of 0 and 1, and 0 is within 2 of 8 and 9</li>
           <li>You can play previous days' puzzles using the date selector</li>

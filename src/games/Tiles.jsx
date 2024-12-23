@@ -73,10 +73,13 @@ const Tiles = () => {
     }
     
     const newUserPattern = [...userPattern].map(row => [...row]);
+    
     setTimeout(() => {
       setIsSpinning(false);
       setAttempts(prev => prev + 1);
+      // Create new originalState array
       const newOriginalState = [...originalState].map(row => [...row]);
+      
       selectedPositions.forEach(([i, j]) => {
         if (correctCount === 3) {
           setGameState('complete');
@@ -85,15 +88,8 @@ const Tiles = () => {
           newUserPattern[i][j] = 1; // gray
           newOriginalState[i][j] = 1; // store gray in original state
         } else {
-          // Only set to yellow if it wasn't previously gray
-          if (originalState[i][j] !== 1) {
-            newUserPattern[i][j] = 3; // yellow
-            newOriginalState[i][j] = 3; // store yellow in original state
-          } else {
-            // Keep it gray if it was previously gray
-            newUserPattern[i][j] = 1;
-            newOriginalState[i][j] = 1;
-          }
+          newUserPattern[i][j] = 3; // yellow
+          newOriginalState[i][j] = 3; // store yellow in original state
         }
       });
       
@@ -106,7 +102,7 @@ const Tiles = () => {
       } else if (correctCount === 0) {
         setFeedback('None of these squares are correct.');
       }
-    }, 650);
+    }, 650); // Slightly longer than the animation duration
   }, [gameState, userPattern, dailyPattern, attempts, selectedDate, isSpinning]);
 
   useEffect(() => {
@@ -158,15 +154,23 @@ const Tiles = () => {
     startNewGame();
   };
 
-  const getColorClass = (state) => {
+  const getColorClass = (state, isComplete = false) => {
+    if (isComplete) {
+      return 'bg-green-500 dark:bg-green-500 border-2 border-green-600 dark:border-green-400';
+    }
+    
     switch (state) {
-      case 1: return 'bg-gray-300';
-      case 3: return 'bg-yellow-300';
-      case 4: return 'bg-blue-200';
-      default: return 'bg-white';
+      case 1: // Wrong guess (gray) - using a lighter gray in dark mode for better contrast
+        return 'bg-gray-300 dark:bg-gray-700';
+      case 3: // Yellow indicator
+        return 'bg-yellow-300 dark:bg-yellow-500';
+      case 4: // Selected state
+        return 'bg-blue-200 dark:bg-blue-500/50';
+      default: // Empty state
+        return 'bg-white dark:bg-gray-800';
     }
   };
-
+  
   const renderCell = (row, col) => {
     const cellState = userPattern[row][col];
     const isComplete = gameState === 'complete';
@@ -177,12 +181,19 @@ const Tiles = () => {
         data-row={row}
         data-col={col}
         onClick={() => handleCellClick(row, col)}
-        className={`w-14 h-14 transition-all duration-200
+        className={`
+          w-14 h-14 transition-all duration-200
           ${isSelected && isSpinning ? 'animate-[spin_0.6s_ease-in-out_1]' : ''}
-          ${getColorClass(cellState)}
-          ${cellState === 4 ? 'border-4 border-blue-500' : 'border-2 border-gray-300'}
-          ${gameState === 'playing' ? 'hover:border-blue-300 cursor-pointer' : 'cursor-not-allowed'}
-          ${isComplete && dailyPattern[row][col] === 1 ? 'bg-green-500 border-2 border-green-600' : ''}`}
+          ${isComplete && dailyPattern[row][col] === 1 
+            ? getColorClass(cellState, true)
+            : getColorClass(cellState)}
+          ${cellState === 4 
+            ? 'border-4 border-blue-500 dark:border-blue-400' 
+            : 'border-2 border-gray-300 dark:border-gray-600'}
+          ${gameState === 'playing' 
+            ? 'hover:border-blue-300 dark:hover:border-blue-400 cursor-pointer' 
+            : 'cursor-not-allowed'}
+        `}
       />
     );
   };
@@ -200,25 +211,29 @@ const Tiles = () => {
   return (
     <div className="p-6 relative">
       {/* Game Header Row */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold ml-8">Tiles</h1>
-          <div className="flex items-center gap-4">
-            <input
-              type="date"
-              value={formatDateForInput(selectedDate)}
-              onChange={handleDateChange}
-              max={formatDateForInput(today)}
-              className="border rounded px-2 py-1"
-            />
-            <button 
-              onClick={() => setShowInstructions(true)}
-              className="p-2 text-gray-500 hover:text-gray-700"
-            >
-              <Info className="w-5 h-5" />
-            </button>
-          </div>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold dark:text-white">Tiles</h1>
+        <div className="flex items-center gap-4">
+          <input
+            type="date"
+            value={formatDateForInput(selectedDate)}
+            onChange={handleDateChange}
+            max={formatDateForInput(today)}
+            className="border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600 
+              focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 dark-mode-date
+              [&::-webkit-calendar-picker-indicator]:dark:invert
+              [&::-webkit-calendar-picker-indicator]:dark:opacity-70
+              [&::-webkit-calendar-picker-indicator]:hover:cursor-pointer"
+          />
+          <button 
+            onClick={() => setShowInstructions(true)}
+            className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+          >
+            <Info className="w-5 h-5" />
+          </button>
         </div>
-      
+      </div>
+
       {/* Game Content */}
       <div className="grid grid-cols-4 gap-2 mb-6 mx-auto w-fit">
         {[0, 1, 2, 3].map(row => (
@@ -234,7 +249,11 @@ const Tiles = () => {
 
       <div className="space-y-4">
         {feedback && (
-          <p className={`text-center mb-4 ${gameState === 'complete' ? 'text-green-600 font-bold text-xl' : 'text-gray-600'}`}>
+          <p className={`text-center mb-4 ${
+            gameState === 'complete' 
+              ? 'text-green-600 dark:text-green-400 font-bold text-xl' 
+              : 'text-gray-600 dark:text-gray-400'
+          }`}>
             {feedback}
           </p>
         )}

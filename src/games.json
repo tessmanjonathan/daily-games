@@ -5,20 +5,39 @@
       "title": "Tiles",
       "description": "Find the hidden tiles in the grid",
       "path": "src/games/Tiles.jsx",
-      "version": "1.0.7",
-      "lastUpdated": "2024-12-22T04:19:02.257Z",
-      "commitHash": "0da0001c4cffc8004ef264e5b642d51c1ad57d97",
-      "enabled": true
+      "version": "1.0.8",
+      "lastUpdated": "2024-12-23T05:29:45.546Z",
+      "commitHash": "726c7da4182b3f4cae8916c1d07a82ec62a2d49a",
+      "enabled": true,
+      "tags": {
+        "new": false
+      }
     },
     "numbers": {
       "id": "numbers",
       "title": "Numbers",
       "description": "Guess the 6-digit number with proximity hints",
       "path": "src/games/Numbers.jsx",
-      "version": "1.0.4",
-      "lastUpdated": "2024-12-22T02:33:06.114Z",
-      "commitHash": "b3505d2bf17d2f9d62776caa86e428a6396123f8",
-      "enabled": true
+      "version": "1.0.5",
+      "lastUpdated": "2024-12-23T05:29:45.554Z",
+      "commitHash": "0da0001c4cffc8004ef264e5b642d51c1ad57d97",
+      "enabled": true,
+      "tags": {
+        "new": false
+      }
+    },
+    "ninesquare": {
+      "id": "ninesquare",
+      "title": "NineSquare",
+      "description": "Find the sequence in the 9-square grid",
+      "path": "src/games/NineSquare.jsx",
+      "version": "1.0.1",
+      "lastUpdated": "2024-12-23T05:29:45.561Z",
+      "commitHash": "",
+      "enabled": true,
+      "tags": {
+        "new": true
+      }
     }
   }
 }
